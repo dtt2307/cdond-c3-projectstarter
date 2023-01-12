@@ -81,10 +81,7 @@ jobs:
       - run:
           name: Configure server
           command: |
-            #pwd 
-            #ls -la            
-            #cd .circleci/ansible
-            #cat inventory.txt
+            cd .circleci/ansible             
             ansible-playbook -i inventory.txt configure-server.yml
 workflows:
  default:
@@ -92,4 +89,4 @@ workflows:
     - deploy_infrastructure
     - configure_infrastructure:
         requires:
-          - deploy_infrastructure  
+          - deploy_infrastructure
