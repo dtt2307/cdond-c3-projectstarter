@@ -58,8 +58,8 @@ deploy-infrastructure:
     - destroy_environment:
         workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"    
 workflows:
-  default:
-    jobs:
-      - deploy-infrastructure
+ default:
+  jobs:
+    - deploy-infrastructure
       
 
