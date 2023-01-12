@@ -32,6 +32,7 @@ jobs:
           command: |
             apk add --update tar gzip
             apk add --no-cache python3 py3-pip && pip3 install --upgrade pip && pip3 install --no-cache-dir awscli && rm -rf /var/cache/apk/*
+            apk add --update ansible
       - run:
           name: Configure server
           command: |
