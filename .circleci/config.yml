@@ -167,4 +167,5 @@ workflows:
         requires:
           - configure_infrastructure
     - deploy-frontend:
-        requires: run-migrations
+        requires: 
+          - run-migrations
