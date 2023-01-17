@@ -168,8 +168,8 @@ jobs:
       - attach_workspace:
           at: ~/      
       - run:
-        name: Install dependencies
-        command: |
+         name: Install dependencies
+         command: |
           apk add --update ansible curl rsync openssh nodejs npm zip
           ansible --version
           pip install awscli
