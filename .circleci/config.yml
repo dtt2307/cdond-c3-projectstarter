@@ -175,7 +175,7 @@ jobs:
     - run:
         name: Deploy backend
         command: |
-          cd bckend
+          cd backend
           npm i
           npm run build
           cd ..
