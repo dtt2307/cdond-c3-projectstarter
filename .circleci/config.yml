@@ -70,6 +70,7 @@ jobs:
               --output text)
             echo "$BACKEND_AWS_PUBLIC_IP" >> .circleci/ansible/inventory.txt
             cat .circleci/ansible/inventory.txt
+            echo "http://$BACKEND_AWS_PUBLIC_IP:303" >> .circleci/outputs/backend_url.txt
      - run: yum -y install tar gzip     
      - persist_to_workspace:
         root: ~/
@@ -202,9 +203,9 @@ jobs:
       - run:
           name: Backend smoke test.
           command: |
-            export API_URL="http://${BACKEND_IP}:3030"
-            echo "${API_URL}"
-            if curl "${API_URL}/api/status" | grep "ok"
+            API_URL=`cat .circleci/outputs/backend_url.txt`
+            echo $API_URL
+            if curl $API_URL/api/status" | grep "ok"
             then
                 return 0
             else
@@ -241,4 +242,4 @@ workflows:
     - smoke-test:
         requires:
           - deploy-backend
-          - deploy-frontend              
+          - deploy-frontend                 
