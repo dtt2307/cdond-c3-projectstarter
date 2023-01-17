@@ -175,7 +175,7 @@ jobs:
     - run:
         name: Deploy backend
         command: |
-          cd bckend
+          cd backend
           npm i
           npm run build
           cd ..
@@ -183,7 +183,7 @@ jobs:
           cd .circleci/ansible
           echo "Contents of the inventory.txt file is -----"
           cat inventory.txt
-          ansible-playbook -i inventory deploy-server.yaml
+          ansible-playbook -i inventory deploy-server.yml
     - destroy_environment:
          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
     - revert-migrations:
@@ -244,4 +244,4 @@ workflows:
     - smoke-test:
         requires:
           - deploy-backend
-          - deploy-frontend      
+          - deploy-frontend   
