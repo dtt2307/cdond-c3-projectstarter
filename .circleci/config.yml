@@ -141,8 +141,7 @@ jobs:
           name: Get backend url
           command: |
             export API_URL="http://${BACKEND_AWS_PUBLIC_IP}:3030"
-            echo "${API_URL}"
-            echo API_URL="http://${BACKEND_AWS_PUBLIC_IP}:3030" >> frontend/.env
+            echo "${API_URL}" >> frontend/.env            
             cat frontend/.env
       - run:
           name: Deploy frontend objects
@@ -245,4 +244,4 @@ workflows:
     - smoke-test:
         requires:
           - deploy-backend
-          - deploy-frontend                                               
+          - deploy-frontend                                              
