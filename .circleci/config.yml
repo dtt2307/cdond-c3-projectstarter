@@ -1,5 +1,4 @@
 version: 2.1
-
 commands:
   destroy_environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
@@ -155,7 +154,41 @@ jobs:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
       - revert-migrations:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
-          when: on_fail              
+          when: on_fail
+  deploy-backend:
+    docker:
+      - image: python:3.7-alpine3.11    
+    steps:
+    - checkout
+    - add_ssh_keys:
+        fingerprints: ["27:a9:6d:58:e8:f2:78:ba:b3:9d:9d:dd:97:74:fe:49"]
+      # attach workspace
+    - attach_workspace:
+        at: ~/      
+    - run:
+        name: Install dependencies
+        command: |
+          apk add --update ansible curl rsync openssh nodejs npm zip
+          ansible --version
+          pip install awscli
+          aws --version
+    - run:
+        name: Deploy backend
+        command: |
+          cd bckend
+          npm i
+          npm run build
+          cd ..
+          tar -C backend -cvzf artifact.tar.gz .
+          cd .circleci/ansible
+          echo "Contents of the inventory.txt file is -----"
+          cat inventory.txt
+          ansible-playbook -i inventory deploy-server.yaml
+    - destroy_environment:
+         workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+    - revert-migrations:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
+          when: on_fail                
 workflows:
  default:
   jobs:
@@ -168,4 +201,7 @@ workflows:
           - configure_infrastructure
     - deploy-frontend:
         requires: 
-          - run-migrations     
+          - run-migrations
+    - deploy-backend:
+        requires: 
+          - run-migrations
