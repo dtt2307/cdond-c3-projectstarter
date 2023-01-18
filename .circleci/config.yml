@@ -204,17 +204,6 @@ jobs:
            apk add --update curl
            pip install awscli
       - run:
-         name: Backend smoke test.
-         command: |
-           API_URL=$(cat .circleci/outputs/backend_url.txt)
-           echo $API_URL
-           if curl $API_URL/api/status | grep "ok"
-           then
-               return 0
-           else
-               return 1
-           fi
-      - run:
          name: Frontend smoke test.
          command: |
           URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/#/employees"            
@@ -225,6 +214,17 @@ jobs:
           else
               return 1
           fi
+      - run:
+         name: Backend smoke test.
+         command: |
+           API_URL=$(cat .circleci/outputs/backend_url.txt)
+           echo $API_URL
+           if curl $API_URL/api/status | grep "ok"
+           then
+               return 0
+           else
+               return 1
+           fi
       # Here's where you will add some code to rollback on failure             
 workflows:
  default:
@@ -245,4 +245,4 @@ workflows:
     - smoke-test:
         requires:
           - deploy-backend
-          - deploy-frontend                                                       
+          - deploy-frontend                                                             
