@@ -207,9 +207,9 @@ jobs:
          name: Backend smoke test.
          command: |
            cat .circleci/outputs/backend_url.txt
-           export API_URL="cat .circleci/outputs/backend_url.txt"
-           echo "${API_URL}"
-           if curl "${API_URL}/api/status" | grep "ok"
+           #export API_URL="cat .circleci/outputs/backend_url.txt"
+           #echo "${API_URL}"
+           if curl (cat .circleci/outputs/backend_url.txt) | grep "ok"
            then
                return 0
            else
@@ -246,4 +246,4 @@ workflows:
     - smoke-test:
         requires:
           - deploy-backend
-          - deploy-frontend                                                        
+          - deploy-frontend                                                       
