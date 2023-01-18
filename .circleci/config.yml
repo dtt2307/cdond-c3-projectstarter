@@ -141,7 +141,7 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            export API_URL="cat .circleci/outputs/backend_url.txt"
+            API_URL="cat .circleci/outputs/backend_url.txt"
             echo $API_URL >> frontend/.env            
             cat frontend/.env
       - run:
@@ -245,4 +245,4 @@ workflows:
     - smoke-test:
         requires:
           - deploy-backend
-          - deploy-frontend                                                  
+          - deploy-frontend                                                        
