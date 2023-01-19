@@ -185,7 +185,7 @@ jobs:
            cd .circleci/ansible
            echo "Contents of the inventory.txt file is -----"
            cat inventory.txt
-           ansible-playbook -i inventory deploy-backend.yml
+           ansible-playbook -i inventory.txt deploy-backend.yml
       - destroy_environment:
          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
       - revert-migrations:
@@ -226,11 +226,11 @@ jobs:
                return 1
            fi
       # Here's where you will add some code to rollback on failure
-      - destroy_environment:
-         workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-      - revert-migrations:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}
-          when: on_fail         
+      # - destroy_environment:
+      #   workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+      #- revert-migrations:
+      #    id: ${CIRCLE_WORKFLOW_ID:0:7}
+      #    when: on_fail         
 workflows:
  default:
   jobs:
