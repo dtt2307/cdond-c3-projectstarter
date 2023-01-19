@@ -183,6 +183,7 @@ jobs:
            cd ..
            pwd
            tar -C backend -cvzf artifact.tar.gz /root/project/.circleci/ansible/roles/deploy/files
+           ls /root/project/.circleci/ansible/roles/deploy/files
            cd .circleci/ansible
            echo "Contents of the inventory.txt file is -----"
            cat inventory.txt
