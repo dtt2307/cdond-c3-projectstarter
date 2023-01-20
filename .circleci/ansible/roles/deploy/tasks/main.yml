@@ -13,11 +13,12 @@
   shell: |
     cd ~/backend_app
     tar -xvf artifact.tar.gz
+    ls .
     rm -rf artifact.tar.gz
 - name: "Install dependencies for project"
   shell: |
-    sudo apt install nodejs npm
     cd ~/backend_app
+    ls .
     sudo npm install
     sudo pm2 stop default
     sudo pm2 start npm --start
