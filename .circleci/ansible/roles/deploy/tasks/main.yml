@@ -19,6 +19,6 @@
   shell: |
     cd ~/backend_app
     ls .
-    sudo npm install
+    sudo npm install -g npm-install-peers
     sudo pm2 stop default
     sudo pm2 start npm --start
