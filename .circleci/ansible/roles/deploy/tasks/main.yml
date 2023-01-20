@@ -20,5 +20,6 @@
     cd ~/backend_app
     ls .
     sudo npm install -g npm-install-peers
+    sudo npm i -g pm2
     sudo pm2 stop default
     sudo pm2 start npm --start
