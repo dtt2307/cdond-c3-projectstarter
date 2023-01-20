@@ -16,7 +16,7 @@
     rm -rf artifact.tar.gz
 - name: "Install dependencies for project"
   shell: |
-    apk add --update nodejs npm
+    apt install nodejs npm
     cd ~/backend_app
     npm install
     pm2 stop default
