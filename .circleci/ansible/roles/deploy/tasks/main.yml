@@ -16,6 +16,7 @@
     ls .
     rm -rf artifact.tar.gz
 - name: "Install dependencies for project"
+  become: true
   shell: |
     cd ~/backend
     ls .
