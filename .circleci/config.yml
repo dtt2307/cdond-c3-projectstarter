@@ -85,6 +85,17 @@ jobs:
     docker:
       # Docker image here that supports Ansible
       - image: python:3.7-alpine3.11
+        environment:
+          NODE_ENV: "local"
+          VERSION: "1"
+          ENVIRONMENT: "production"
+          TYPEORM_CONNECTION: $TYPEORM_CONNECTION
+          TYPEORM_HOST: $TYPEORM_HOST
+          TYPEORM_USERNAME: $TYPEORM_USERNAME
+          TYPEORM_PASSWORD: $TYPEORM_PASSWORD
+          TYPEORM_DATABASE: $TYPEORM_DATABASE
+          TYPEORM_PORT: $TYPEORM_PORT
+          TYPEORM_ENTITIES: $TYPEORM_ENTITIES
     steps:
       - checkout
       - add_ssh_keys:
@@ -142,8 +153,10 @@ jobs:
           name: Get backend url
           command: |
             cat .circleci/outputs/backend_url.txt
-            #API_URL=cat .circleci/outputs/backend_url.txt            
-            #echo $API_URL >> cat frontend/.env
+            API_URL=cat .circleci/outputs/backend_url.txt            
+            echo $API_URL >> cat frontend/.env
+            echo "NODE_ENV=production" >> frontend/.env
+
       - run:
           name: Deploy frontend objects
           command: |
@@ -159,7 +172,18 @@ jobs:
           when: on_fail
   deploy-backend:
     docker:
-      - image: python:3.7-alpine3.11    
+      - image: python:3.7-alpine3.11
+        environment:
+          NODE_ENV: "local"
+          VERSION: "1"
+          ENVIRONMENT: "production"
+          TYPEORM_CONNECTION: $TYPEORM_CONNECTION
+          TYPEORM_HOST: $TYPEORM_HOST
+          TYPEORM_USERNAME: $TYPEORM_USERNAME
+          TYPEORM_PASSWORD: $TYPEORM_PASSWORD
+          TYPEORM_DATABASE: $TYPEORM_DATABASE
+          TYPEORM_PORT: $TYPEORM_PORT
+          TYPEORM_ENTITIES: $TYPEORM_ENTITIES   
     steps:
       - checkout
       - add_ssh_keys:
@@ -258,4 +282,4 @@ workflows:
     - smoke-test:
         requires:
           - deploy-backend
-          - deploy-frontend                                                                       
+          - deploy-frontend                                                                      
