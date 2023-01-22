@@ -156,7 +156,7 @@ jobs:
             chmod 777 .circleci/outputs/backend_url.txt
             ls -ltr .circleci/outputs/
             API_URL=cat .circleci/outputs/backend_url.txt            
-            echo $API_URL >> cat frontend/.env
+            echo $API_URL >> frontend/.env
             echo "NODE_ENV=production" >> frontend/.env
 
       - run:
@@ -284,4 +284,4 @@ workflows:
     - smoke-test:
         requires:
           - deploy-backend
-          - deploy-frontend                                                                      
+          - deploy-frontend                                                                   
