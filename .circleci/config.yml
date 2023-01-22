@@ -203,14 +203,8 @@ jobs:
            npm i
            npm run build
            cd ..
-           pwd
-           ls
            tar -C backend -cvzf artifact.tar.gz .
-           pwd
-           ls
            cp -p artifact.tar.gz .circleci/ansible/
-           cd .circleci/ansible
-           ls
            tar -xvf artifact.tar.gz
            ls -la
            echo "Contents of the inventory.txt file is -----"
@@ -280,4 +274,4 @@ workflows:
     - smoke-test:
         requires:
           - deploy-backend
-          - deploy-frontend                                                                   
+          - deploy-frontend                                                                         
