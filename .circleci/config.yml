@@ -152,12 +152,8 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            cat .circleci/outputs/backend_url.txt
-            chmod 777 .circleci/outputs/backend_url.txt
-            ls -ltr .circleci/outputs/
-            API_URL=cat .circleci/outputs/backend_url.txt            
-            echo $API_URL >> frontend/.env
-            echo "NODE_ENV=production" >> frontend/.env
+            cat .circleci/outputs/backend_url.txt >> frontend/.env
+            cat frontend/.env           
 
       - run:
           name: Deploy frontend objects
