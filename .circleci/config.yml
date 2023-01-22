@@ -153,6 +153,8 @@ jobs:
           name: Get backend url
           command: |
             cat .circleci/outputs/backend_url.txt
+            chmod 777 .circleci/outputs/backend_url.txt
+            ls -ltr .circleci/outputs/
             API_URL=cat .circleci/outputs/backend_url.txt            
             echo $API_URL >> cat frontend/.env
             echo "NODE_ENV=production" >> frontend/.env
