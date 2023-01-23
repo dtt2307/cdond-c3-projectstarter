@@ -21,13 +21,12 @@
     cd /home/ubuntu/backend
     ls .
     npm install -g npm-install-peers
-    npm i -g pm2    
-    pm2 stop default
-    pm2 start npm -- start
+    npm i -g pm2   
 - name: "start npm"
   shell: |
     cd /home/ubuntu/backend
-    npm start
+    pm2 stop default
+    pm2 start npm -- start    
   environment:
       ENVIRONMENT: production
       TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION') }}"
