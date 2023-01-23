@@ -16,14 +16,13 @@
     ls .
     rm -rf artifact.tar.gz
 - name: "Install dependencies for project"
-  become: true
   shell: |
     cd ~/backend
     ls .
     npm install -g npm-install-peers
     npm i -g pm2    
     pm2 stop default
-    pm2 start
+    pm2 start npm -- start
   environment:
       ENVIRONMENT: production
       TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION') }}"
