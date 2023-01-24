@@ -1,15 +1,18 @@
 ---
 - name: "Creates backend directory"
+  become: true
   file:
     path: ~/backend
     state: directory
 
 - name: "Copy compiled backend app"
+  become: true
   copy:
     src: artifact.tar.gz
     dest: "~/backend/artifact.tar.gz"
 
 - name: "Unzip backend files to correct directory"
+  become: true
   shell: |
     cd ~/backend
     tar -xvf artifact.tar.gz
@@ -35,7 +38,7 @@
 - name: "re-start npm"
   become: true
   shell: |
-    cd /home/ubuntu/backend
+    cd /home/ubuntu/backend 
     whoami > user02.txt & pm2 start npm -- start & ss -tunlp >> ports.txt &  ps -ef | grep -i pm2 >> pid.txt    
   environment:
       ENVIRONMENT: production
