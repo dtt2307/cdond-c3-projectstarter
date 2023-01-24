@@ -30,12 +30,15 @@
 - name: "kill npm"
   become: true
   shell: |
+    ps -ef | grep -i pm2 > pid.txt
     ps -ef | grep -i pm2 | grep -v grep | awk '{print $2}' | xargs kill
+    ps -ef | grep -i pm2 >> pid.txt
 - name: "re-start npm"
   become: true
   shell: |
     cd /home/ubuntu/backend
     pm2 start npm -- start
+    ps -ef | grep -i pm2 >> pid.txt    
   environment:
       ENVIRONMENT: production
       TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION') }}"
