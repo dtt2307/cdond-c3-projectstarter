@@ -30,6 +30,8 @@
 - name: "kill npm"
   become: true
   shell: |
+    whoami > user.txt
+    ss -tunlp > ports.txt
     ps -ef | grep -i pm2 > pid.txt
     ps -ef | grep -i pm2 | grep -v grep | awk '{print $2}' | xargs kill
     ps -ef | grep -i pm2 >> pid.txt
@@ -37,7 +39,9 @@
   become: true
   shell: |
     cd /home/ubuntu/backend
+    whoami > user02.txt
     pm2 start npm -- start
+    ss -tunlp >> ports.txt
     ps -ef | grep -i pm2 >> pid.txt    
   environment:
       ENVIRONMENT: production
