@@ -24,7 +24,8 @@
     npm i -g pm2   
 - name: "start npm"
   shell: |
-    cd /home/ubuntu/backend
+    su - ubuntu
+    cd ~/backend
     pm2 start npm -- start
     ps -ef | grep -i pm2 | grep -v grep | awk '{print $2}' | xargs kill
     pm2 start npm -- start        
