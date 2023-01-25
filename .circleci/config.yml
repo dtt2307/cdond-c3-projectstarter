@@ -272,7 +272,7 @@ jobs:
             aws cloudformation deploy \
               --template-file cloudfront.yml \
               --stack-name udpeople-cloudfront-production
-              --parameter-overrides workflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
       # Here's where you will add some code to rollback on failure
       - destroy_environment:
@@ -302,4 +302,4 @@ workflows:
           - deploy-frontend
     - cloudfront-update:
         requires:
-          - smoke-test                                                                                    
+          - smoke-test                                                                               
