@@ -21,14 +21,14 @@
 - name: "Install dependencies for project"
   become: true
   shell: |
-    cd /home/ubuntu/backend
+    cd ~/backend
     ls .
     npm install -g npm-install-peers
     npm i -g pm2   
 - name: "start npm"
   become: true
   shell: |
-    cd /home/ubuntu/backend
+    cd ~/backend
     pm2 start npm -- start
   environment:
       ENVIRONMENT: production
