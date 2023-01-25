@@ -212,11 +212,11 @@ jobs:
            echo "Contents of the inventory.txt file is -----"
            cat inventory.txt
            ansible-playbook -i inventory.txt deploy-backend.yml
-    #  - destroy_environment:
-    #     workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-    #  - revert-migrations:
-    #      id: ${CIRCLE_WORKFLOW_ID:0:7}
-    #      when: on_fail
+      - destroy_environment:
+         workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+      - revert-migrations:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
+          when: on_fail
   smoke-test:
     docker:
       - image: python:3.7-alpine3.11
@@ -252,11 +252,34 @@ jobs:
                return 1
            fi
       # Here's where you will add some code to rollback on failure
-      # - destroy_environment:
-      #   workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-      #- revert-migrations:
-      #    id: ${CIRCLE_WORKFLOW_ID:0:7}
-      #    when: on_fail         
+      - destroy_environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+      - revert-migrations:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
+          when: on_fail
+  cloudfront-update:
+    docker:
+      # Docker image here that supports AWS CLI
+      - image: amazon/aws-cli
+    steps:
+      # Checkout code from git
+      - checkout
+      - run:
+          name: Update cloudfront distribution
+          working_directory: ./.circleci/files
+          command: |
+            # your code here
+            aws cloudformation deploy \
+              --template-file cloudfront.yml \
+              --stack-name udpeople-cloudfront-production
+              --parameter-overrides workflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
+              --tags project=udapeople
+      # Here's where you will add some code to rollback on failure
+      - destroy_environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+      - revert-migrations:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
+          when: on_fail       
 workflows:
  default:
   jobs:
@@ -276,4 +299,7 @@ workflows:
     - smoke-test:
         requires:
           - deploy-backend
-          - deploy-frontend                                                                               
+          - deploy-frontend
+    - cloudfront-update:
+        requires:
+          - smoke-test                                                                                    
