@@ -29,7 +29,11 @@
   become: true
   shell: |
     cd ~/backend
-    /usr/local/bin/pm2 start npm -- start
+    pm2 start npm -- start
+    sleep 30
+    ss -tunlp > ports.txt
+    sleep 15
+    ss -tunlp > ports.txt    
   environment:
       ENVIRONMENT: production
       TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION') }}"
