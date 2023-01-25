@@ -29,7 +29,7 @@
   become: true
   shell: |
     cd ~/backend
-    nohup npm start &
+    nohup npm start > /dev/null 2>&1
   environment:
       ENVIRONMENT: production
       TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION') }}"
