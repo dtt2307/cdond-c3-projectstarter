@@ -303,7 +303,7 @@ jobs:
             OldWorkflowID=$(cat .circleci/files/oldworkflow.txt)
             echo $OldWorkflowID
             CurrentWorkflowID=${CIRCLE_WORKFLOW_ID:0:7}
-            cat $CurrentWorkflowID
+            echo $CurrentWorkflowID
             if [[ "$CurrentWorkflowID" != "$OldWorkflowID" ]]
             then
               echo "$OldWorkflowID!=$CurrentWorkflowID => will delete old version"
@@ -338,4 +338,4 @@ workflows:
           - smoke-test
     - cleanup:
         requires:
-          - cloudfront-update                                                                                  
+          - cloudfront-update                                                                                 
