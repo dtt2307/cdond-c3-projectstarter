@@ -271,9 +271,10 @@ jobs:
             # your code here
             aws cloudformation deploy \
               --template-file cloudfront.yml \
-              --stack-name udpeople-cloudfront-production
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
-              --tags project=udapeople
+              --tags project=udapeople \
+              --stack-name udpeople-cloudfront-production \
+              --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"
+              
       # Here's where you will add some code to rollback on failure
       - destroy_environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
