@@ -36,6 +36,105 @@ commands:
               
             fi
 jobs:
+  build-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [frontend-build]
+      - run:
+          name: Build front-end
+          command: |
+            cd frontend
+            npm install
+            npm run build
+      - save_cache:
+          paths: [frontend/node_modules]
+          key: frontend-build
+
+  build-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [backend-build]
+      - run:
+          name: Back-end build
+          command: |
+             cd backend
+             npm install
+             npm run build             
+      - save_cache:
+          paths: [backend/node_modules]
+          key: backend-build
+  test-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [test-frontend]
+      - run:
+          name: Test front-end
+          command: |
+            cd frontend
+            npm install
+            npm run test
+      - save_cache:
+          paths: [test-frontend/node_modules]
+          key: test-frontend                
+  test-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [test-backend]
+      - run:
+          name: Test backend
+          command: |
+            cd backend
+            npm install
+            npm run test
+      - save_cache:
+          paths: [test-backend/node_modules]
+          key: test-backend
+  scan-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [scan-frontend]
+      - run:
+          name: Scan Frontend
+          command: |
+            cd frontend
+            npm install
+            npm audit fix --force
+            npm audit --audit-level=critical 
+      - save_cache:
+          paths: [scan-frontendd/node_modules]
+          key: scan-frontend      
+  scan-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [scan-backend]
+      - run:
+          name: Scan Backend
+          command: |
+            cd frontend
+            npm install
+            npm audit fix --force
+            npm audit --audit-level=critical
+      - save_cache:
+          paths: [scan-backend/node_modules]
+          key: scan-backend
   deploy_infrastructure:
    docker:
      - image: amazon/aws-cli
@@ -316,6 +415,16 @@ jobs:
 workflows:
  default:
   jobs:
+      - build-frontend
+      - build-backend
+      - test-frontend:
+          requires: [build-frontend]
+      - test-backend:
+          requires: [build-backend]
+      - scan-backend:
+          requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]
     - deploy_infrastructure
     - configure_infrastructure:
         requires:
@@ -338,4 +447,4 @@ workflows:
           - smoke-test
     - cleanup:
         requires:
-          - cloudfront-update                                                                                 
+          - cloudfront-update                                                                         
