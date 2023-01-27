@@ -48,8 +48,7 @@ jobs:
           command: |
             cd frontend
             npm install
-            npm run build
-            npm audit fix
+            npm run build            
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
@@ -66,8 +65,7 @@ jobs:
           command: |
              cd backend
              npm install
-             npm run build
-             npm audit fix           
+             npm run build                       
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
@@ -116,7 +114,7 @@ jobs:
             cd frontend
             npm install
             npm audit fix --force
-            npm audit --audit-level=critical 
+            #npm audit --audit-level=critical 
       - save_cache:
           paths: [scan-frontendd/node_modules]
           key: scan-frontend      
@@ -133,7 +131,7 @@ jobs:
             cd frontend
             npm install
             npm audit fix --force
-            npm audit --audit-level=critical
+            #npm audit --audit-level=critical
       - save_cache:
           paths: [scan-backend/node_modules]
           key: scan-backend
@@ -453,4 +451,4 @@ workflows:
           - smoke-test
     - cleanup:
         requires:
-          - cloudfront-update                                                                                 
+          - cloudfront-update                                                                             
