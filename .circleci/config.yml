@@ -52,7 +52,6 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
-
   build-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -128,7 +127,7 @@ jobs:
       - run:
           name: Scan Backend
           command: |
-            cd frontend
+            cd backend
             npm install
             npm audit fix --force
             #npm audit --audit-level=critical
@@ -416,36 +415,92 @@ workflows:
  default:
   jobs:
     - build-frontend
+        filters:
+          branches:
+            only:
+              - dev-branch
     - build-backend
+        filters:
+          branches:
+            only:
+              - dev-branch
     - test-frontend:
         requires: [build-frontend]
+        filters:
+          branches:
+            only:
+              - dev-branch
     - test-backend:
         requires: [build-backend]
+        filters:
+          branches:
+            only:
+              - dev-branch
     - scan-backend:
         requires: [build-backend]
+        filters:
+          branches:
+            only:
+              - dev-branch
     - scan-frontend:
         requires: [build-frontend]
+        filters:
+          branches:
+            only:
+              - dev-branch
     - deploy_infrastructure:
-        requires: [test-frontend, test-backend, scan-frontend, scan-backend]        
+        requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+        filters:
+          branches:
+            only:
+              - master       
     - configure_infrastructure:
         requires:
           - deploy_infrastructure
+        filters:
+          branches:
+            only:
+              - master              
     - run-migrations:
         requires:
           - configure_infrastructure
+        filters:
+          branches:
+            only:
+              - master 
     - deploy-frontend:
         requires: 
           - run-migrations
+        filters:
+          branches:
+            only:
+              - master 
     - deploy-backend:
         requires: 
           - run-migrations
+        filters:
+          branches:
+            only:
+              - master 
     - smoke-test:
         requires:
           - deploy-backend
           - deploy-frontend
+        filters:
+          branches:
+            only:
+              - master 
     - cloudfront-update:
         requires:
           - smoke-test
+        filters:
+          branches:
+            only:
+              - master 
     - cleanup:
         requires:
-          - cloudfront-update                                                                             
+          - cloudfront-update
+        filters:
+          branches:
+            only:
+              - master                                                                              
