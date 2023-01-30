@@ -53,7 +53,7 @@ jobs:
       - run:
           name: npm install
           working_directory: ./backend
-          command: ls -la && mpm install
+          command: ls -la && npm install
       - persist_to_workspace:
           root: .
           paths:
@@ -491,4 +491,4 @@ workflows:
     #      - smoke-test        
     #- cleanup:
     #    requires:
-    #      - cloudfront-update                                                                                                                       
+    #      - cloudfront-update                                                                                                                               
