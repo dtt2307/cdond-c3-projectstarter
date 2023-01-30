@@ -128,7 +128,7 @@ jobs:
           name: Scan Backend
           command: |
             cd backend
-            #npm install
+            npm install
             #npm audit fix --force
             #npm audit --audit-level=critical         
       - save_cache:
@@ -341,6 +341,19 @@ jobs:
       # Checkout code from git
       - checkout
       - run:
+         name: Install dependencies
+         command: |
+          yum install -y tar gzip 
+      - run:
+          name: Get old stack workflow id
+          command: |
+            # your code here
+            OldWorkflowID=$(aws cloudformation \
+              list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
+              --no-paginate --output text)            
+            echo "$OldWorkflowID" > .circleci/files/oldworkflow.txt
+            cat .circleci/files/oldworkflow.txt  
+      - run:
           name: Update cloudfront distribution
           working_directory: ./.circleci/files
           command: |
@@ -349,8 +362,11 @@ jobs:
               --template-file cloudfront.yml \
               --tags project=udapeople \
               --stack-name udpeople-cloudfront-production \
-              --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"
-              
+              --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"      
+      - persist_to_workspace:
+         root: ~/
+         paths:
+           - project/.circleci/files/oldworkflow.txt                    
       # Here's where you will add some code to rollback on failure
       - destroy_environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
@@ -363,16 +379,13 @@ jobs:
       - image: amazon/aws-cli
     steps:
       # Checkout code from git
-      - checkout
+      - checkout      
       - run:
-          name: Get old stack workflow id
-          command: |
-            # your code here
-            OldWorkflowID=$(aws cloudformation \
-              list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
-              --no-paginate --output text)            
-            echo "$OldWorkflowID" > .circleci/files/oldworkflow.txt
-            cat .circleci/files/oldworkflow.txt
+         name: Install dependencies
+         command: |
+          yum install -y tar gzip
+      - attach_workspace:
+          at: ~/            
       - run:
           name: Remove old stacks and files
           command: |
@@ -392,93 +405,37 @@ jobs:
 workflows:
  default:
   jobs:
-    - build-frontend:
-        filters:
-          branches:
-            only:
-              - dev-branch
-    - build-backend:
-        filters:
-          branches:
-            only:
-              - dev-branch
+    - build-frontend        
+    - build-backend        
     - test-frontend:
-        requires: [build-frontend]
-        filters:
-          branches:
-            only:
-              - dev-branch
+        requires: [build-frontend]        
     - test-backend:
-        requires: [build-backend]
-        filters:
-          branches:
-            only:
-              - dev-branch
+        requires: [build-backend]        
     - scan-backend:
-        requires: [build-backend]
-        filters:
-          branches:
-            only:
-              - dev-branch
+        requires: [build-backend]        
     - scan-frontend:
-        requires: [build-frontend]
-        filters:
-          branches:
-            only:
-              - dev-branch
+        requires: [build-frontend]        
     - deploy_infrastructure:
-        requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-        filters:
-          branches:
-            only:
-              - master       
+        requires: [test-frontend, test-backend, scan-frontend, scan-backend]             
     - configure_infrastructure:
         requires:
-          - deploy_infrastructure
-        filters:
-          branches:
-            only:
-              - master              
+          - deploy_infrastructure                   
     - run-migrations:
         requires:
-          - configure_infrastructure
-        filters:
-          branches:
-            only:
-              - master 
+          - configure_infrastructure        
     - deploy-frontend:
         requires: 
-          - run-migrations
-        filters:
-          branches:
-            only:
-              - master 
+          - run-migrations        
     - deploy-backend:
         requires: 
-          - run-migrations
-        filters:
-          branches:
-            only:
-              - master 
+          - run-migrations        
     - smoke-test:
         requires:
           - deploy-backend
-          - deploy-frontend
-        filters:
-          branches:
-            only:
-              - master 
+          - deploy-frontend        
     - cloudfront-update:
         requires:
-          - smoke-test
-        filters:
-          branches:
-            only:
-              - master 
+          - smoke-test        
     - cleanup:
         requires:
-          - cloudfront-update
-        filters:
-          branches:
-            only:
-              - master                                                                                                                                   
+          - cloudfront-update                                                                                                                                           
