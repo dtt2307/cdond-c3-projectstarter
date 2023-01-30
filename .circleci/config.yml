@@ -1,14 +1,4 @@
 version: 2.1
-executors:
-  node:
-    docker:
-      - image: circleci/node:13.8.0
-  python:
-    docker:
-     - image: python:3.7-alpine3.11
-  aws:
-    docker:
-     - image: amazon/aws-cli
 commands:
   destroy_environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
@@ -46,114 +36,104 @@ commands:
               
             fi
 jobs:
-  install-backend-dependencies:
-    executor: node
-    steps:
-      - checkout
-      - run:
-          name: npm install
-          working_directory: ./backend
-          command: ls -la && npm install
-      - persist_to_workspace:
-          root: .
-          paths:
-            - backend/node_modules
-  install-frontend-dependencies:
-   executor: node
-   steps:
-      - checkout
-      - run:
-          name: npm install
-          working_directory: ./frontend
-          command: ls -la && npm install
-      - persist_to_workspace:
-          root: .
-          paths:
-            - frontend/node_modules
-  build-backend:
-    executor: node      
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .          
-      - run:
-          name: npm run build
-          working_directory: ./backend
-          command: npm run build            
-      - persist_to_workspace:
-          root: .
-          paths:
-            - backend/dist
   build-frontend:
-    executor: node
+    docker:
+      - image: circleci/node:13.8.0
     steps:
       - checkout
-      - attach_workspace:
-          at: .
+      - restore_cache:
+          keys: [frontend-build]
       - run:
-          name: npm run build
-          working_directory: ./frontend
-          command: npm run build
+          name: Build front-end
+          command: |
+            cd frontend
+            npm install
+            npm run build            
+      - save_cache:
+          paths: [frontend/node_modules]
+          key: frontend-build
+  build-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [backend-build]
+      - run:
+          name: Back-end build
+          command: |
+             cd backend
+             npm install
+             npm run build                       
+      - save_cache:
+          paths: [backend/node_modules]
+          key: backend-build
   test-frontend:
-    executor: node
+    docker:
+      - image: circleci/node:13.8.0
     steps:
       - checkout
-      - attach_workspace:
-          at: .
+      - restore_cache:
+          keys: [test-frontend]
       - run:
-          name: Install junit coverage reporter
-          working_directory: ./frontend
-          command: npm install --save-dev jest-junit
-      - run:
-          name: Run tests with JUnit as reporter
-          working_directory: ./frontend
-          command: npm test -- --ci --runInBand --reporters=default --reporters=jest-junit && pwd && ls -la /tmp
-          environment:
-            JEST_JUNIT_OUTPUT_DIR: ./test_results
-      - store_test_results:
-          path: ./frontend/test_results
-      - store_artifacts:
-          path: ./frontend/test_results                
+          name: Test front-end
+          command: |
+            cd frontend
+            npm install
+            npm run test
+      - save_cache:
+          paths: [test-frontend/node_modules]
+          key: test-frontend                
   test-backend:
-    executor: node
+    docker:
+      - image: circleci/node:13.8.0
     steps:
       - checkout
-      - attach_workspace:
-          at: .
+      - restore_cache:
+          keys: [test-backend]
       - run:
-          name: Install junit coverage reporter
-          working_directory: ./backend
-          command: npm install --save-dev jest-junit
-      - run:
-          name: Run tests with JUnit as reporter
-          working_directory: ./backend
-          command: npm test -- --ci --runInBand --reporters=default --reporters=jest-junit && pwd
-          environment:
-            JEST_JUNIT_OUTPUT_DIR: ./test_results
-      - store_test_results:
-          path: ./backend/test_results
-      - store_artifacts:
-          path: ./backend/test_results
+          name: Test backend
+          command: |
+            cd backend
+            npm install
+            npm run test
+      - save_cache:
+          paths: [test-backend/node_modules]
+          key: test-backend
   scan-frontend:
-    executor: node
+    docker:
+      - image: circleci/node:13.8.0
     steps:
       - checkout
-      - attach_workspace:
-          at: .
+      - restore_cache:
+          keys: [scan-frontend]
       - run:
-          name: Check Frontend against security vulnerabilities
-          working_directory: ./frontend
-          command: npm audit --audit-level=critical
+          name: Scan Frontend
+          command: |
+            cd frontend
+            npm install
+            npm audit fix --force
+            #npm audit --audit-level=critical 
+      - save_cache:
+          paths: [scan-frontendd/node_modules]
+          key: scan-frontend      
   scan-backend:
-    executor: node
+    docker:
+      - image: circleci/node:13.8.0
     steps:
       - checkout
-      - attach_workspace:
-          at: .
+      - restore_cache:
+          keys: [scan-backend]
       - run:
-          name: Check Backend against security vulnerabilities
-          working_directory: ./backend
-          command: npm audit --audit-level=critical
+          name: Scan Backend
+          command: |
+            cd backend
+            #npm install
+            #npm audit fix --force
+            #npm audit --audit-level=critical         
+      - save_cache:
+          paths: [scan-backend/node_modules]
+          key: scan-backend
   deploy_infrastructure:
    docker:
      - image: amazon/aws-cli
@@ -202,18 +182,7 @@ jobs:
   configure_infrastructure:
     docker:
       # Docker image here that supports Ansible
-      - image: python:3.7-alpine3.11
-        environment:
-          NODE_ENV: "local"
-          VERSION: "1"
-          ENVIRONMENT: "production"
-          TYPEORM_CONNECTION: $TYPEORM_CONNECTION
-          TYPEORM_HOST: $TYPEORM_HOST
-          TYPEORM_USERNAME: $TYPEORM_USERNAME
-          TYPEORM_PASSWORD: $TYPEORM_PASSWORD
-          TYPEORM_DATABASE: $TYPEORM_DATABASE
-          TYPEORM_PORT: $TYPEORM_PORT
-          TYPEORM_ENTITIES: $TYPEORM_ENTITIES
+      - image: python:3.7-alpine3.11        
     steps:
       - checkout
       - add_ssh_keys:
@@ -289,18 +258,7 @@ jobs:
           when: on_fail
   deploy-backend:
     docker:
-      - image: python:3.7-alpine3.11
-        environment:
-          NODE_ENV: "local"
-          VERSION: "1"
-          ENVIRONMENT: "production"
-          TYPEORM_CONNECTION: $TYPEORM_CONNECTION
-          TYPEORM_HOST: $TYPEORM_HOST
-          TYPEORM_USERNAME: $TYPEORM_USERNAME
-          TYPEORM_PASSWORD: $TYPEORM_PASSWORD
-          TYPEORM_DATABASE: $TYPEORM_DATABASE
-          TYPEORM_PORT: $TYPEORM_PORT
-          TYPEORM_ENTITIES: $TYPEORM_ENTITIES   
+      - image: python:3.7-alpine3.11        
     steps:
       - checkout
       - add_ssh_keys:
@@ -383,19 +341,6 @@ jobs:
       # Checkout code from git
       - checkout
       - run:
-         name: Install dependencies
-         command: |
-          yum install -y tar gzip 
-      - run:
-          name: Get old stack workflow id
-          command: |
-            # your code here
-            OldWorkflowID=$(aws cloudformation \
-              list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
-              --no-paginate --output text)            
-            echo "$OldWorkflowID" > .circleci/files/oldworkflow.txt
-            cat .circleci/files/oldworkflow.txt  
-      - run:
           name: Update cloudfront distribution
           working_directory: ./.circleci/files
           command: |
@@ -404,11 +349,8 @@ jobs:
               --template-file cloudfront.yml \
               --tags project=udapeople \
               --stack-name udpeople-cloudfront-production \
-              --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"      
-      - persist_to_workspace:
-         root: ~/
-         paths:
-           - project/.circleci/files/oldworkflow.txt                    
+              --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"
+              
       # Here's where you will add some code to rollback on failure
       - destroy_environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
@@ -421,13 +363,16 @@ jobs:
       - image: amazon/aws-cli
     steps:
       # Checkout code from git
-      - checkout      
+      - checkout
       - run:
-         name: Install dependencies
-         command: |
-          yum install -y tar gzip
-      - attach_workspace:
-          at: ~/            
+          name: Get old stack workflow id
+          command: |
+            # your code here
+            OldWorkflowID=$(aws cloudformation \
+              list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
+              --no-paginate --output text)            
+            echo "$OldWorkflowID" > .circleci/files/oldworkflow.txt
+            cat .circleci/files/oldworkflow.txt
       - run:
           name: Remove old stacks and files
           command: |
@@ -447,48 +392,93 @@ jobs:
 workflows:
  default:
   jobs:
-    ## BUILD AND DEPLOY
-    - install-backend-dependencies
-    - install-frontend-dependencies
-    - build-backend:
-        requires:
-          - install-backend-dependencies
     - build-frontend:
-        requires:
-          - install-frontend-dependencies
-    - test-backend:
-        requires:
-          - build-backend
+        filters:
+          branches:
+            only:
+              - dev-branch
+    - build-backend:
+        filters:
+          branches:
+            only:
+              - dev-branch
     - test-frontend:
-        requires:
-          -  build-frontend
+        requires: [build-frontend]
+        filters:
+          branches:
+            only:
+              - dev-branch
+    - test-backend:
+        requires: [build-backend]
+        filters:
+          branches:
+            only:
+              - dev-branch
     - scan-backend:
-        requires:
-          - build-backend
+        requires: [build-backend]
+        filters:
+          branches:
+            only:
+              - dev-branch
     - scan-frontend:
+        requires: [build-frontend]
+        filters:
+          branches:
+            only:
+              - dev-branch
+    - deploy_infrastructure:
+        requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+        filters:
+          branches:
+            only:
+              - master       
+    - configure_infrastructure:
         requires:
-          - build-frontend
-    #- deploy_infrastructure:
-    #    requires: [test-frontend, test-backend, scan-frontend, scan-backend]             
-    #- configure_infrastructure:
-    #    requires:
-    #      - deploy_infrastructure                   
-    #- run-migrations:
-    #    requires:
-    #      - configure_infrastructure        
-    #- deploy-frontend:
-    #    requires: 
-    #      - run-migrations        
-    #- deploy-backend:
-    #    requires: 
-    #      - run-migrations        
-    #- smoke-test:
-    #    requires:
-    #      - deploy-backend
-    #      - deploy-frontend        
-    #- cloudfront-update:
-    #    requires:
-    #      - smoke-test        
-    #- cleanup:
-    #    requires:
-    #      - cloudfront-update                                                                                                                               
+          - deploy_infrastructure
+        filters:
+          branches:
+            only:
+              - master              
+    - run-migrations:
+        requires:
+          - configure_infrastructure
+        filters:
+          branches:
+            only:
+              - master 
+    - deploy-frontend:
+        requires: 
+          - run-migrations
+        filters:
+          branches:
+            only:
+              - master 
+    - deploy-backend:
+        requires: 
+          - run-migrations
+        filters:
+          branches:
+            only:
+              - master 
+    - smoke-test:
+        requires:
+          - deploy-backend
+          - deploy-frontend
+        filters:
+          branches:
+            only:
+              - master 
+    - cloudfront-update:
+        requires:
+          - smoke-test
+        filters:
+          branches:
+            only:
+              - master 
+    - cleanup:
+        requires:
+          - cloudfront-update
+        filters:
+          branches:
+            only:
+              - master                                                                                                                                   
