@@ -84,7 +84,7 @@ jobs:
           root: .
           paths:
             - backend/dist
-  build-front-end:
+  build-frontend:
     executor: node
     steps:
       - checkout
@@ -491,4 +491,4 @@ workflows:
     #      - smoke-test        
     #- cleanup:
     #    requires:
-    #      - cloudfront-update                                                                                                                
+    #      - cloudfront-update                                                                                                                       
