@@ -365,7 +365,7 @@ jobs:
       - run:
          name: Install dependencies
          command: |
-          apk add --update tar    
+          yum install -y tar gzip    
       - run:
           name: Update cloudfront distribution
           working_directory: ./.circleci/files
