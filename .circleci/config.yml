@@ -350,13 +350,13 @@ jobs:
       - image: amazon/aws-cli
     steps:
       # Checkout code from git
-      - checkout
-      - attach_workspace:
-          at: ~/      
+      - checkout         
       - run:
          name: Install dependencies
          command: |
-          yum install -y tar gzip       
+          yum install -y tar gzip 
+      - attach_workspace:
+          at: ~/        
       - run:
           name: Update cloudfront distribution
           working_directory: ./.circleci/files
@@ -447,4 +447,4 @@ workflows:
           - smoke-test        
     - cleanup:
         requires:
-          - cloudfront-update                                                                                                                                                          
+          - cloudfront-update        
