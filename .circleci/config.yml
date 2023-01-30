@@ -1,4 +1,14 @@
 version: 2.1
+executors:
+  node:
+    docker:
+      - image: circleci/node:13.8.0
+  python:
+    docker:
+     - image: python:3.7-alpine3.11
+  aws:
+    docker:
+     - image: amazon/aws-cli
 commands:
   destroy_environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
@@ -36,104 +46,114 @@ commands:
               
             fi
 jobs:
-  build-frontend:
-    docker:
-      - image: circleci/node:13.8.0
+  install-backend-dependencies:
+    executor: node
     steps:
       - checkout
-      - restore_cache:
-          keys: [frontend-build]
       - run:
-          name: Build front-end
-          command: |
-            cd frontend
-            npm install
-            npm run build            
-      - save_cache:
-          paths: [frontend/node_modules]
-          key: frontend-build
+          name: npm install
+          working_directory: ./backend
+          command: ls -la && mpm install
+      - persist_to_workspace:
+          root: .
+          paths:
+            - backend/node_modules
+  install-frontend-dependencies:
+   executor: node
+   steps:
+      - checkout
+      - run:
+          name: npm install
+          working_directory: ./frontend
+          command: ls -la && npm install
+      - persist_to_workspace:
+          root: .
+          paths:
+            - frontend/node_modules
   build-backend:
-    docker:
-      - image: circleci/node:13.8.0
+    executor: node      
     steps:
       - checkout
-      - restore_cache:
-          keys: [backend-build]
+      - attach_workspace:
+          at: .          
       - run:
-          name: Back-end build
-          command: |
-             cd backend
-             npm install
-             npm run build                       
-      - save_cache:
-          paths: [backend/node_modules]
-          key: backend-build
+          name: npm run build
+          working_directory: ./backend
+          command: npm run build            
+      - persist_to_workspace:
+          root: .
+          paths:
+            - backend/dist
+  build-front-end:
+    executor: node
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: npm run build
+          working_directory: ./frontend
+          command: npm run build
   test-frontend:
-    docker:
-      - image: circleci/node:13.8.0
+    executor: node
     steps:
       - checkout
-      - restore_cache:
-          keys: [test-frontend]
+      - attach_workspace:
+          at: .
       - run:
-          name: Test front-end
-          command: |
-            cd frontend
-            npm install
-            npm run test
-      - save_cache:
-          paths: [test-frontend/node_modules]
-          key: test-frontend                
+          name: Install junit coverage reporter
+          working_directory: ./frontend
+          command: npm install --save-dev jest-junit
+      - run:
+          name: Run tests with JUnit as reporter
+          working_directory: ./frontend
+          command: npm test -- --ci --runInBand --reporters=default --reporters=jest-junit && pwd && ls -la /tmp
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: ./test_results
+      - store_test_results:
+          path: ./frontend/test_results
+      - store_artifacts:
+          path: ./frontend/test_results                
   test-backend:
-    docker:
-      - image: circleci/node:13.8.0
+    executor: node
     steps:
       - checkout
-      - restore_cache:
-          keys: [test-backend]
+      - attach_workspace:
+          at: .
       - run:
-          name: Test backend
-          command: |
-            cd backend
-            npm install
-            npm run test
-      - save_cache:
-          paths: [test-backend/node_modules]
-          key: test-backend
+          name: Install junit coverage reporter
+          working_directory: ./backend
+          command: npm install --save-dev jest-junit
+      - run:
+          name: Run tests with JUnit as reporter
+          working_directory: ./backend
+          command: npm test -- --ci --runInBand --reporters=default --reporters=jest-junit && pwd
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: ./test_results
+      - store_test_results:
+          path: ./backend/test_results
+      - store_artifacts:
+          path: ./backend/test_results
   scan-frontend:
-    docker:
-      - image: circleci/node:13.8.0
+    executor: node
     steps:
       - checkout
-      - restore_cache:
-          keys: [scan-frontend]
+      - attach_workspace:
+          at: .
       - run:
-          name: Scan Frontend
-          command: |
-            cd frontend
-            npm install
-            npm audit fix --force
-            #npm audit --audit-level=critical 
-      - save_cache:
-          paths: [scan-frontendd/node_modules]
-          key: scan-frontend      
+          name: Check Frontend against security vulnerabilities
+          working_directory: ./frontend
+          command: npm audit --audit-level=critical
   scan-backend:
-    docker:
-      - image: circleci/node:13.8.0
+    executor: node
     steps:
       - checkout
-      - restore_cache:
-          keys: [scan-backend]
+      - attach_workspace:
+          at: .
       - run:
-          name: Scan Backend
-          command: |
-            cd backend
-            npm install
-            #npm audit fix --force
-            #npm audit --audit-level=critical         
-      - save_cache:
-          paths: [scan-backend/node_modules]
-          key: scan-backend
+          name: Check Backend against security vulnerabilities
+          working_directory: ./backend
+          command: npm audit --audit-level=critical
   deploy_infrastructure:
    docker:
      - image: amazon/aws-cli
@@ -427,37 +447,50 @@ jobs:
 workflows:
  default:
   jobs:
+    ## BUILD AND DEPLOY
     - build-frontend        
     - build-backend        
-    - test-frontend:
-        requires: [build-frontend]        
-    - test-backend:
-        requires: [build-backend]        
-    - scan-backend:
-        requires: [build-backend]        
-    - scan-frontend:
-        requires: [build-frontend]        
-    - deploy_infrastructure:
-        requires: [test-frontend, test-backend, scan-frontend, scan-backend]             
-    - configure_infrastructure:
-        requires:
-          - deploy_infrastructure                   
-    - run-migrations:
-        requires:
-          - configure_infrastructure        
-    - deploy-frontend:
-        requires: 
-          - run-migrations        
-    - deploy-backend:
-        requires: 
-          - run-migrations        
-    - smoke-test:
-        requires:
-          - deploy-backend
-          - deploy-frontend        
-    - cloudfront-update:
-        requires:
-          - smoke-test        
-    - cleanup:
-        requires:
-          - cloudfront-update                                                                                                  
+    - install-backend-dependencies
+      - install-frontend-dependencies
+      - build-backend:
+          requires:
+            - install-backend-dependencies
+      - build-frontend:
+          requires:
+            - install-frontend-dependencies
+      - test-backend:
+          requires:
+            - build-backend
+      - test-frontend:
+          requires:
+            -  build-frontend
+      - scan-backend:
+          requires:
+            - build-backend
+      - scan-frontend:
+          requires:
+            - build-frontend      
+    #- deploy_infrastructure:
+    #    requires: [test-frontend, test-backend, scan-frontend, scan-backend]             
+    #- configure_infrastructure:
+    #    requires:
+    #      - deploy_infrastructure                   
+    #- run-migrations:
+    #    requires:
+    #      - configure_infrastructure        
+    #- deploy-frontend:
+    #    requires: 
+    #      - run-migrations        
+    #- deploy-backend:
+    #    requires: 
+    #      - run-migrations        
+    #- smoke-test:
+    #    requires:
+    #      - deploy-backend
+    #      - deploy-frontend        
+    #- cloudfront-update:
+    #    requires:
+    #      - smoke-test        
+    #- cleanup:
+    #    requires:
+    #      - cloudfront-update                                                                                                         
