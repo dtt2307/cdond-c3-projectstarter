@@ -364,7 +364,9 @@ jobs:
             cd .circleci/files
             export OldWorkflowID=$(aws cloudformation \
               list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
-              --no-paginate --output text)            
+              --no-paginate --output text) 
+            pwd
+            ls -la           
             echo "$OldWorkflowID" > .circleci/files/oldworkflow.txt
             pwd
             ls -la
@@ -449,4 +451,4 @@ workflows:
           - smoke-test        
     - cleanup:
         requires:
-          - cloudfront-update                 
+          - cloudfront-update                         
