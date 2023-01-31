@@ -37,10 +37,4 @@ Resources:
       ImageId: ami-068663a3c619dd892 
       Tags:
         - Key: Name
-          Value: !Sub backend-${ID}
-  Outputs:
-    WorkflowID:
-      Description: A reference to the created VPC
-      Value: !Ref ID
-      Export:
-        Name: WorkflowID
+          Value: !Sub backend-${ID}  
