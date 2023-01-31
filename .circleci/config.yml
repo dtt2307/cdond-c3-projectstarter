@@ -371,10 +371,10 @@ jobs:
             cat oldworkflow.txt  
             aws cloudformation deploy \
               --template-file cloudfront.yml \
-              --stack-name udapeople-cloudfront-production \
-              --tags project=udapeople \                         
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
-                         
+              --stack-name udapeople-cloudfront-production \                                      
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
+              --tags project=udapeople
+
             if [[ "${STACKS[@]}" =~ "${OldworkflowID"]]
             then
               aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
@@ -458,4 +458,4 @@ workflows:
           - smoke-test        
     #- cleanup:
      #   requires:
-      #    - cloudfront-update                                                                                                         
+      #    - cloudfront-update                                                                                                                 
