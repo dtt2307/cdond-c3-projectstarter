@@ -403,6 +403,7 @@ jobs:
             cd .circleci/files
             OldWorkflowID="cat oldworkflow.txt"
             echo $OldWorkflowID
+            export $OldworkflowID
             CurrentWorkflowID=${CIRCLE_WORKFLOW_ID:0:7}
             echo $CurrentWorkflowID
             if [[ "$CurrentWorkflowID" != "$OldWorkflowID" ]]
