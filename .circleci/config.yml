@@ -363,21 +363,28 @@ jobs:
             # your code here
             cd .circleci/files
             oldstackid=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE --no-paginate | grep udapeople | cut -d "-" -f 3 | cut -d '"' -f 1 | head -n 1)
-            echo Old Workflow Id: "${oldstackid}"  
-            aws cloudformation deploy \
-              --template-file cloudfront.yml \
-              --stack-name udapeople-cloudfront-production \                                      
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
-              --tags project=udapeople
-            if [[ "$CurrentWorkflowID" != "$OldWorkflowID" ]]
+            echo Old Workflow Id: "${oldstackid}" 
+            CurrentWorkflowID=${CIRCLE_WORKFLOW_ID:0:7}
+            echo $CurrentWorkflowID
+            if [[ "$CurrentWorkflowID" != "$oldstackid" ]]
             then
               echo "$OldWorkflowID!=$CurrentWorkflowID => will delete old version"
               aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
               aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
               aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
             else
-              echo "$OldWorkflowID==$CurrentWorkflowID => nothing needs to be done..."
+              echo "$OldWorkflowID==$CurrentWorkflowID => nothing needs to be done..."              
             fi
+            - run:
+          name: Update cloudfront distribution
+          working_directory: ./.circleci/files
+          command: |
+            # your code here
+            aws cloudformation deploy \
+              --template-file cloudfront.yml \
+              --tags project=udapeople \
+              --stack-name udpeople-cloudfront-production \
+              --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" 
       - persist_to_workspace:
          root: ~/
          paths:
@@ -455,4 +462,4 @@ workflows:
           - smoke-test        
     #- cleanup:
      #   requires:
-      #    - cloudfront-update                                                                                                                                                      
+         # - cloudfront-update                                                                                                                                                             
