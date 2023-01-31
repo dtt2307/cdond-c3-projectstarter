@@ -401,7 +401,7 @@ jobs:
           name: Remove old stacks and files
           command: |
             cd .circleci/files
-            OldWorkflowID=cat oldworkflow.txt
+            OldWorkflowID="cat oldworkflow.txt"
             echo $OldWorkflowID
             CurrentWorkflowID=${CIRCLE_WORKFLOW_ID:0:7}
             echo $CurrentWorkflowID
@@ -450,4 +450,4 @@ workflows:
           - smoke-test        
     - cleanup:
         requires:
-          - cloudfront-update                                                  
+          - cloudfront-update                                                         
