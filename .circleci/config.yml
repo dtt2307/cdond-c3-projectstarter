@@ -369,13 +369,15 @@ jobs:
               --stack-name udapeople-cloudfront-production \                                      
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
-
-            if [[ "${STACKS[@]}" =~ "${OldworkflowID"]]
+            if [[ "$CurrentWorkflowID" != "$OldWorkflowID" ]]
             then
+              echo "$OldWorkflowID!=$CurrentWorkflowID => will delete old version"
               aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
-              aws cloudformation delete-stack --stack-name "udapeople-backend-${oldworkflowID]"
-              aws cloudformation delete-stack --stack-name "udapeople-frontend-${oldworkflowID}"
-            fi              
+              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
+              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
+            else
+              echo "$OldWorkflowID==$CurrentWorkflowID => nothing needs to be done..."
+            fi
       - persist_to_workspace:
          root: ~/
          paths:
@@ -453,4 +455,4 @@ workflows:
           - smoke-test        
     #- cleanup:
      #   requires:
-      #    - cloudfront-update                                                                                                                                               
+      3    - cloudfront-update                                                                                                                                                      
