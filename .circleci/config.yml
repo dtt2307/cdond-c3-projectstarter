@@ -444,4 +444,4 @@ workflows:
           - smoke-test        
     - cleanup:
         requires:
-          - cloudfront-upda                                                                                                                                                                                     
+          - cloudfront-update                                                                                                                                                                                             
