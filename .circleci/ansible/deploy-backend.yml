@@ -10,13 +10,13 @@
   environment:    
     - ENVIRONMENT: production
     - TYPEORM_CONNECTION: postgres
-    - TYPEORM_ENTITIES: "{{ lookup('env', 'TYPEORM_ENTITIES') }}"
+    - TYPEORM_ENTITIES: ./src/modules/domain/**/*.entity.ts
     - TYPEORM_HOST: database-1.chngvdiars6k.us-east-1.rds.amazonaws.com
     - TYPEORM_PORT: 5432
     - TYPEORM_USERNAME: postgres
     - TYPEORM_PASSWORD: mypassword!!
     - TYPEORM_DATABASE: udapeople
-    - TYPEORM_MIGRATIONS: "{{ lookup('env', 'TYPEORM_MIGRATIONS')}}"
-    - TYPEORM_MIGRATIONS_DIR: "{{ lookup('env', 'TYPEORM_MIGRATIONS_DIR')}}"
+    - TYPEORM_MIGRATIONS: ./src/migrations
+    - TYPEORM_MIGRATIONS_DIR: ./src/migrations/*.ts
   roles:
     - deploy  
