@@ -391,7 +391,7 @@ jobs:
       - attach_workspace:
           at: ~/            
       - run:
-          name: Update cloudfront distribution
+          name: Clean up old stacks
           command: |
             # your code here
             cd .circleci/files
@@ -444,4 +444,4 @@ workflows:
           - smoke-test        
     - cleanup:
         requires:
-          - cloudfront-update                                                                                                                                                                                     
+          - cloudfront-upda                                                                                                                                                                                     
