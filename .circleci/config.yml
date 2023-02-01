@@ -362,7 +362,7 @@ jobs:
           command: |
             # your code here
             cd .circleci/files
-            oldstackid=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE --no-paginate | grep udapeople | cut -d "-" -f 3 | cut -d '"' -f 1 | head -n 1)
+            oldstackid=$(aws cloudformation list-stacks --query "StackSummaries[*].StackName" --stack-status-filter CREATE_COMPLETE --no-paginate | grep udapeople | cut -d "-" -f 3 | cut -d '"' -f 1 | tail -n 1)
             echo Old Workflow Id: "${oldstackid}" 
             CurrentWorkflowID=${CIRCLE_WORKFLOW_ID:0:7}
             echo $CurrentWorkflowID
