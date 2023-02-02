@@ -111,7 +111,8 @@ jobs:
           name: Scan Frontend
           command: |
             cd frontend
-            npm audit --audit-level=critical                         
+            npm audit --audit-level=critical
+            npm update                        
       - save_cache:
           paths: [scan-frontendd/node_modules]
           key: scan-frontend      
@@ -126,7 +127,8 @@ jobs:
           name: Scan Backend
           command: |
             cd backend
-            npm audit --audit-level=critical                              
+            npm audit --audit-level=critical
+            npm update                              
       - save_cache:
           paths: [scan-backend/node_modules]
           key: scan-backend
@@ -441,4 +443,4 @@ workflows:
           - smoke-test        
     - cleanup:
         requires:
-          - cloudfront-update                                                                                                                                                                                                                                               
+          - cloudfront-update                                                                                                                                                                                                                                                       
