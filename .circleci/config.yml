@@ -240,6 +240,8 @@ jobs:
           command: |
             cat .circleci/outputs/backend_url.txt >> frontend/.env
             cat frontend/.env
+            export API_URL=$(cat frontend/.env)
+            echo "${API_URL}"
             cd frontend
             npm install
             npm run build
@@ -443,4 +445,4 @@ workflows:
           - smoke-test        
     - cleanup:
         requires:
-          - cloudfront-update                                                                                                                                                                                                          
+          - cloudfront-update                                                                                                                                                                                                                 
