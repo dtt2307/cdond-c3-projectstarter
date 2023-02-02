@@ -157,8 +157,7 @@ jobs:
               --template-file .circleci/files/frontend.yml \
               --tags project=udapeople \
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
-              
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"             
      - run:
         name: Add back-end ip to ansible inventory
         command: |
@@ -240,14 +239,15 @@ jobs:
           name: Get backend url
           command: |
             cat .circleci/outputs/backend_url.txt >> frontend/.env
-            cat frontend/.env           
-
+            cat frontend/.env
+            cd frontend
+            npm run build
       - run:
           name: Deploy frontend objects
           command: |
             cd frontend
-            npm install
-            npm run build
+            #npm install
+            #npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             echo ${CIRCLE_WORKFLOW_ID:0:7}
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
@@ -442,4 +442,4 @@ workflows:
           - smoke-test        
     - cleanup:
         requires:
-          - cloudfront-update                                                                                                                                                                                            
+          - cloudfront-update                                                                                                                                                                                                   
