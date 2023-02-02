@@ -241,6 +241,7 @@ jobs:
             cat .circleci/outputs/backend_url.txt >> frontend/.env
             cat frontend/.env
             cd frontend
+            npm install
             npm run build
       - run:
           name: Deploy frontend objects
@@ -442,4 +443,4 @@ workflows:
           - smoke-test        
     - cleanup:
         requires:
-          - cloudfront-update                                                                                                                                                                                                   
+          - cloudfront-update                                                                                                                                                                                                          
